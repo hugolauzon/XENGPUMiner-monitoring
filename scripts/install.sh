@@ -5,6 +5,16 @@ cd_project_root
 
 printSubTitle "Installing software requirements and cloning XENGPUMiner official repo"
 
+# Look for argument -a and set ACCOUNT
+while [[ "$#" -gt 0 ]]; do
+    case $1 in
+        -a) ACCOUNT="$2"; shift ;;
+    esac
+    shift
+    echo "$ACCOUNT" >account.txt
+    return 1
+done
+
 # Ensure Account and CUDA Arch
 ensure_account
 ensure_cuda_arch

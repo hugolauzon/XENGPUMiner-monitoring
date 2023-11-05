@@ -32,18 +32,6 @@ cd_xengpuminer() {
 }
 
 ensure_account() {
-  # Look for argument -a and set ACCOUNT
-  if [ $# -gt 0 ]; then
-    while [[ "$#" -gt 0 ]]; do
-        case $1 in
-            -a) ACCOUNT="$2"; shift ;;
-        esac
-        shift
-        echo "$ACCOUNT" >account.txt
-        return 1
-    done
-  fi
-
   if [ -f "account.txt" ]; then
     ACCOUNT="$(cat account.txt)"
   else
