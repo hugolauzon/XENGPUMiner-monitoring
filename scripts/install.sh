@@ -5,6 +5,7 @@ cd_project_root
 
 printSubTitle "Installing software requirements and cloning XENGPUMiner official repo"
 
+# Ensure Account and CUDA Arch
 ensure_account
 ensure_cuda_arch
 
@@ -41,9 +42,9 @@ printTitle "Building xengpuminer (could take a few minutes)"
 rm -rf build &>/dev/null
 rm xengpuminer &>/dev/null
 
-sudo chmod +x build.sh
+sudo chmod +x build.sh xengpuminer &>/dev/null
 ./build.sh -cuda_arch ${CUDA_ARCH_SM} &>/dev/null
-sudo chmod +x xengpuminer
+sudo chmod +x xengpuminer xengpuminer &>/dev/null
 
 printTitle "Installing requirements.txt (could take a few minutes)"
 pip3 install -U -r requirements.txt &>/dev/null
@@ -55,5 +56,6 @@ printSubTitle "Current config: $(sed -n 5p config.conf)"
 cd_project_root
 
 printTitle "Installation completed!"
-printSubTitle "To start mining and monitoring run:"
-echo "scripts/start.sh && scripts/monitor.sh"
+
+# Start mining and monitoring
+scripts/start.sh && scripts/monitor.sh
