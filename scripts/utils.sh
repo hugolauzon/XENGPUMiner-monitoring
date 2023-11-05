@@ -33,7 +33,7 @@ cd_xengpuminer() {
 
 ensure_account() {
   # Look for argument -a and set ACCOUNT
-  if [ $# -eq 0 ]; then
+  if [ $# -gt 0 ]; then
     while [[ "$#" -gt 0 ]]; do
         case $1 in
             -a) ACCOUNT="$2"; shift ;;
