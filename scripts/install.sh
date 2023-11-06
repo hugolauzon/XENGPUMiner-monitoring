@@ -68,4 +68,6 @@ cd_project_root
 printTitle "Installation completed!"
 
 # Start mining and monitoring
+scripts/stop.sh
+screen -wipe
 scripts/start.sh && scripts/monitor.sh
