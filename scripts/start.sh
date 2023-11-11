@@ -35,6 +35,7 @@ if ! screen -list | grep -q "gpuminer"; then
     export RESET_REQ
   else
     j=0
+    sleep 10
     HR0=$(awk '{ if (FNR==1) {sum+=$0} } END {print sum} ' ./hash_rates/hashrate*)
     HR1=$HR0
     printSubTitle "Current total hash rate: $HR1 H/s"
