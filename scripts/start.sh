@@ -53,7 +53,7 @@ if ! screen -list | grep -q "gpuminer"; then
       printSubTitle "Current total hash rate: $HR2 H/s"
     done
     CPU_COUNT=$j
-    if (( $(echo "$HR2 + 10 < $HR1" | bc -l) )); then
+    if (( $(echo "$HR2 + 5 < $HR1" | bc -l) )); then
       ((CPU_COUNT--))
       RESET_REQ=1
       printSubTitle "Started too many CPUs. Need a script reset."

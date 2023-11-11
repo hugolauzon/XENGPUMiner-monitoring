@@ -38,6 +38,7 @@ install_package "make"
 install_package "ocl-icd-opencl-dev"
 install_package "screen"
 install_package "nano"
+install_package "bc"
 
 if [ ! -d "XENGPUMiner" ]; then
   printTitle "Cloning XENGPUMiner official repo"
