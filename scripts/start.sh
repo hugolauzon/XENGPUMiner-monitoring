@@ -25,35 +25,44 @@ if ! screen -list | grep -q "gpuminer"; then
     screen -S "gpuminer" -X screen bash -c "./xengpuminer -d $i"
   done
   
-  if [ -z ${CPU_COUNT+x} ]; then
+  if ! [ -z ${CPU_COUNT+x} ]; then
     for ((j = 0; j < $CPU_COUNT; j++)); do
+      printSubTitle "CPU_COUNT already set to $CPU_COUNT"
       printSubTitle "Starting CPU $j"
       screen -S "cpuminer" -X screen bash -c "./xengpuminer -m cpu"
     done
-    RESET_REQ = false
+    RESET_REQ=0
+    export $RESET_REQ
   else
-    j = 0
-    HR0 = $(awk '{ if (FNR==1) {sum+=$0} } END {print sum} ' ./hash_rates/hashrate*)
-    HR1 = $HR0
+    j=0
+    HR0=$(awk '{ if (FNR==1) {sum+=$0} } END {print sum} ' ./hash_rates/hashrate*)
+    HR1=$HR0
+    printSubTitle "Current total hash rate: $HR1 H/s"
     printSubTitle "Starting CPU $j"
     screen -S "cpuminer" -X screen bash -c "./xengpuminer -m cpu"
-    HR2 = $(awk '{ if (FNR==1) {sum+=$0} } END {print sum} ' ./hash_rates/hashrate*)
     sleep 10
-    while [$HR2 -gt $HR1]; do
+    HR2=$(awk '{ if (FNR==1) {sum+=$0} } END {print sum} ' ./hash_rates/hashrate*)
+    printSubTitle "Current total hash rate: $HR2 H/s"
+    while (( $(echo "$HR2 > $HR1 + 2.0" | bc -l) )); do
       ((j++))
       printSubTitle "Starting CPU $j"
-      HR1 = $HR2
+      HR1=$HR2
       screen -S "cpuminer" -X screen bash -c "./xengpuminer -m cpu"
       sleep 10
-      HR2 = $(awk '{ if (FNR==1) {sum+=$0} } END {print sum} ' ./hash_rates/hashrate*)
+      HR2=$(awk '{ if (FNR==1) {sum+=$0} } END {print sum} ' ./hash_rates/hashrate*)
       printSubTitle "Current total hash rate: $HR2 H/s"
     done
-    CPU_COUNT = $j
-    if [$HR1 -gt (($HR2 + 30))]; then
+    CPU_COUNT=$j
+    if (( $(echo "$HR2 + 10 < $HR1" | bc -l) )); then
       ((CPU_COUNT--))
-      RESET_REQ = true
+      RESET_REQ=1
       printSubTitle "Started too many CPUs. Need a script reset."
+    else
+      RESET_REQ=0
+      printSubTitle "Hash rate optimized succesfully!"
     fi
+    export $RESET_REQ
+    export $CPU_COUNT
   fi
 else
   printTitle "Nothing to start, you are already mining!"
