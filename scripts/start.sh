@@ -32,7 +32,7 @@ if ! screen -list | grep -q "gpuminer"; then
       screen -S "cpuminer" -X screen bash -c "./xengpuminer -m cpu"
     done
     RESET_REQ=0
-    export $RESET_REQ
+    export RESET_REQ
   else
     j=0
     HR0=$(awk '{ if (FNR==1) {sum+=$0} } END {print sum} ' ./hash_rates/hashrate*)
