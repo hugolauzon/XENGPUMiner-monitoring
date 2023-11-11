@@ -61,8 +61,8 @@ if ! screen -list | grep -q "gpuminer"; then
       RESET_REQ=0
       printSubTitle "Hash rate optimized succesfully!"
     fi
-    export $RESET_REQ
-    export $CPU_COUNT
+    export RESET_REQ
+    export CPU_COUNT
   fi
 else
   printTitle "Nothing to start, you are already mining!"
