@@ -69,3 +69,8 @@ printTitle "Installation completed!"
 
 # Start mining and monitoring
 scripts/start.sh && scripts/monitor.sh
+
+if [RESET_REQ -eq true]; then
+  scripts/stop.sh
+  scripts/start.sh && scripts/monitor.sh
+if
