@@ -15,7 +15,7 @@ if ! screen -list | grep -q "gpuminer"; then
   GPU_COUNT=$(nvidia-smi --list-gpus | wc -l)
   TOT_GPU_COUNT=$(lspci|grep 'VGA\|Display' -c)
   TOT_CPU_COUNT=$(nproc)
-  NET_CPU_COUNT=$(((TOT_CPU_COUNT*GPU_COUNT/TOT_GPU_COUNT)-GPU_COUNT))
+  NET_CPU_COUNT=$(((TOT_CPU_COUNT*GPU_COUNT/TOT_GPU_COUNT)-GPU_COUNT-1))
   NET_CPU_COUNT_INT=${NET_CPU_COUNT%.*}
   printTitle "Net CPU Count = $NET_CPU_COUNT"
   if [ $GPU_COUNT -eq 0 ]; then
@@ -32,59 +32,51 @@ if ! screen -list | grep -q "gpuminer"; then
     printSubTitle "Current total hash rate: $HR0 H/s"
   done
   
-  if [ $NET_CPU_COUNT_INT -gt 0 ]; then
-    for ((j = 0; j < $NET_CPU_COUNT_INT; j++)); do
+  # if [ $NET_CPU_COUNT_INT -gt 0 ]; then
+  #   for ((j = 0; j < $NET_CPU_COUNT_INT; j++)); do
+  #     printSubTitle "Starting CPU $j"
+  #     screen -S "cpuminer" -X screen bash -c "./xengpuminer -m cpu"
+  #     sleep 3
+  #     HR0=$(awk '{ if (FNR==1) {sum+=$0} } END {print sum} ' ./hash_rates/hashrate*)
+  #     printSubTitle "Current total hash rate: $HR0 H/s"
+  #   done
+  # fi
+
+
+
+  if [ -f ./mining_cpu_count.txt ]; then
+    CPU_COUNT=$(< ./mining_cpu_count.txt)
+    printSubTitle "CPU_COUNT already set to $CPU_COUNT"
+    for ((j = 0; j < $CPU_COUNT; j++)); do
       printSubTitle "Starting CPU $j"
       screen -S "cpuminer" -X screen bash -c "./xengpuminer -m cpu"
-      sleep 3
-      HR0=$(awk '{ if (FNR==1) {sum+=$0} } END {print sum} ' ./hash_rates/hashrate*)
-      printSubTitle "Current total hash rate: $HR0 H/s"
     done
+    RESET_REQ=0
+    export RESET_REQ
+  else
+    j=0
+    sleep 60
+    HR0=$(awk '{ if (FNR==1) {sum+=$0} } END {print sum} ' ./hash_rates/hashrate*)
+    HR1=$HR0
+    printSubTitle "Current total hash rate: $HR1 H/s"
+    printSubTitle "Starting CPU $j"
+    screen -S "cpuminer" -X screen bash -c "./xengpuminer -m cpu"
+    sleep 3
+    HR2=$(awk '{ if (FNR==1) {sum+=$0} } END {print sum} ' ./hash_rates/hashrate*)
+    printSubTitle "Current total hash rate: $HR2 H/s"
+    while (( $(echo "$HR2 > $HR1 + 2.0" | bc -l) && $j < $NET_CPU_COUNT_INT )); do
+      ((j++))
+      printSubTitle "Starting CPU $j"
+      HR1=$HR2
+      screen -S "cpuminer" -X screen bash -c "./xengpuminer -m cpu"
+      sleep 3
+      HR2=$(awk '{ if (FNR==1) {sum+=$0} } END {print sum} ' ./hash_rates/hashrate*)
+      printSubTitle "Current total hash rate: $HR2 H/s"
+    done
+    CPU_COUNT=$j
+    printSubTitle "Hash rate optimized succesfully!"
+    "$CPU_COUNT" >mining_cpu_count.txt
   fi
-
-
-
-
-  # if ! [ -z ${CPU_COUNT+x} ]; then
-  #   for ((j = 0; j < $CPU_COUNT; j++)); do
-  #     printSubTitle "CPU_COUNT already set to $CPU_COUNT"
-  #     printSubTitle "Starting CPU $j"
-  #     screen -S "cpuminer" -X screen bash -c "./xengpuminer -m cpu"
-  #   done
-  #   RESET_REQ=0
-  #   export RESET_REQ
-  # else
-  #   j=0
-  #   sleep 10
-  #   HR0=$(awk '{ if (FNR==1) {sum+=$0} } END {print sum} ' ./hash_rates/hashrate*)
-  #   HR1=$HR0
-  #   printSubTitle "Current total hash rate: $HR1 H/s"
-  #   printSubTitle "Starting CPU $j"
-  #   screen -S "cpuminer" -X screen bash -c "./xengpuminer -m cpu"
-  #   sleep 10
-  #   HR2=$(awk '{ if (FNR==1) {sum+=$0} } END {print sum} ' ./hash_rates/hashrate*)
-  #   printSubTitle "Current total hash rate: $HR2 H/s"
-  #   while (( $(echo "$HR2 > $HR1 + 2.0" | bc -l) )); do
-  #     ((j++))
-  #     printSubTitle "Starting CPU $j"
-  #     HR1=$HR2
-  #     screen -S "cpuminer" -X screen bash -c "./xengpuminer -m cpu"
-  #     sleep 10
-  #     HR2=$(awk '{ if (FNR==1) {sum+=$0} } END {print sum} ' ./hash_rates/hashrate*)
-  #     printSubTitle "Current total hash rate: $HR2 H/s"
-  #   done
-  #   CPU_COUNT=$j
-  #   if (( $(echo "$HR2 + 5 < $HR1" | bc -l) )); then
-  #     ((CPU_COUNT--))
-  #     RESET_REQ=1
-  #     printSubTitle "Started too many CPUs. Need a script reset."
-  #   else
-  #     RESET_REQ=0
-  #     printSubTitle "Hash rate optimized succesfully!"
-  #   fi
-  #   export RESET_REQ
-  #   export CPU_COUNT
-  # fi
 else
   printTitle "Nothing to start, you are already mining!"
 fi
