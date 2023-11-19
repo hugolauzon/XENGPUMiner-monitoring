@@ -39,6 +39,8 @@ install_package "ocl-icd-opencl-dev"
 install_package "screen"
 install_package "nano"
 install_package "bc"
+install_package "vim"
+install_package "pciutils"
 
 if [ ! -d "XENGPUMiner" ]; then
   printTitle "Cloning XENGPUMiner official repo"
